@@ -38,7 +38,7 @@ function App() {
       />
       <div>
         <Navbar secretKey={secretKey} onExitVault={handleExitVault} />
-        <main className='min-h-[80vh] flex flex-col justify-center'>
+        <main className={`min-h-[80vh] flex flex-col ${secretKey ? 'justify-start py-4' : 'justify-center'}`}>
           {secretKey ? (
             <Manager secretKey={secretKey} onExitVault={handleExitVault} />
           ) : (

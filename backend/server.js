@@ -78,10 +78,16 @@ const authenticateVault = async (req, res, next) => {
         }
 
         const keyHash = hashKey(rawKey);
-        const vault = await db.collection('vaults').findOne({ keyHash });
+        let vault = await db.collection('vaults').findOne({ keyHash });
 
         if (!vault) {
-            return res.status(401).json({ success: false, message: 'Invalid or unrecognized secret key' });
+            const newVault = {
+                keyHash,
+                createdAt: new Date(),
+                updatedAt: new Date()
+            };
+            const result = await db.collection('vaults').insertOne(newVault);
+            vault = { _id: result.insertedId, ...newVault };
         }
 
         req.vault = vault;
@@ -125,24 +131,34 @@ app.post('/api/vault/create', async (req, res) => {
     }
 });
 
-// 2. Access / Verify existing Vault using secret key
+// 1. Access or Create Vault using user-chosen secret key (Dontpad-style)
 app.post('/api/vault/access', async (req, res) => {
     try {
         const { secretKey } = req.body;
         if (!secretKey || typeof secretKey !== 'string' || !secretKey.trim()) {
-            return res.status(400).json({ success: false, message: 'Secret key is required' });
+            return res.status(400).json({ success: false, message: 'Key is required' });
         }
 
-        const keyHash = hashKey(secretKey);
-        const vault = await db.collection('vaults').findOne({ keyHash });
+        const trimmedKey = secretKey.trim();
+        const keyHash = hashKey(trimmedKey);
+        let vault = await db.collection('vaults').findOne({ keyHash });
 
+        let isNew = false;
         if (!vault) {
-            return res.status(404).json({ success: false, message: 'Vault not found. Please check your secret key.' });
+            const newVault = {
+                keyHash,
+                createdAt: new Date(),
+                updatedAt: new Date()
+            };
+            const result = await db.collection('vaults').insertOne(newVault);
+            vault = { _id: result.insertedId, ...newVault };
+            isNew = true;
         }
 
         res.json({
             success: true,
-            message: 'Vault authenticated successfully'
+            isNew,
+            message: isNew ? 'New vault created' : 'Vault opened'
         });
     } catch (error) {
         console.error('Access vault error:', error);
