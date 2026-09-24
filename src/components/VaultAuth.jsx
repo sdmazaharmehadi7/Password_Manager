@@ -15,7 +15,7 @@ const VaultAuth = ({ onVaultAccess }) => {
 
         setLoading(true);
         try {
-            const res = await fetch("http://localhost:3000/api/vault/access", {
+            const res = await fetch("/api/vault/access", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ secretKey: trimmedKey })

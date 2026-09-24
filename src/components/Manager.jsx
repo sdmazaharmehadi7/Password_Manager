@@ -19,7 +19,7 @@ const Manager = ({ secretKey, onExitVault }) => {
     // Fetch passwords strictly belonging to this authenticated vault
     const getPasswords = async () => {
         try {
-            const req = await fetch("http://localhost:3000/api/vault/passwords", {
+            const req = await fetch("/api/vault/passwords", {
                 headers: {
                     "x-secret-key": secretKey
                 }
@@ -78,7 +78,7 @@ const Manager = ({ secretKey, onExitVault }) => {
 
             try {
                 // Save to MongoDB scoped strictly to this secret-key vault
-                const res = await fetch("http://localhost:3000/api/vault/passwords", {
+                const res = await fetch("/api/vault/passwords", {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
@@ -119,7 +119,7 @@ const Manager = ({ secretKey, onExitVault }) => {
             setPasswordArray(passwordArray.filter(item => item.id !== id));
 
             try {
-                const res = await fetch(`http://localhost:3000/api/vault/passwords/${id}`, {
+                const res = await fetch(`/api/vault/passwords/${id}`, {
                     method: "DELETE",
                     headers: {
                         "Content-Type": "application/json",

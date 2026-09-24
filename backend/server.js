@@ -64,6 +64,14 @@ const port = 3000;
 app.use(bodyparser.json());
 app.use(cors());
 
+// Ensure DB is initialized for serverless environments
+app.use(async (req, res, next) => {
+    if (!db) {
+        await initDb();
+    }
+    next();
+});
+
 // Utility: Hash secret key with SHA-256
 function hashKey(secretKey) {
     return crypto.createHash('sha256').update(String(secretKey).trim()).digest('hex');
@@ -252,6 +260,10 @@ const deletePasswordHandler = async (req, res) => {
 app.delete('/api/vault/passwords/:id', authenticateVault, deletePasswordHandler);
 app.delete('/api/vault/passwords', authenticateVault, deletePasswordHandler);
 
-app.listen(port, () => {
-    console.log(`PassOp Backend running on http://localhost:${port}`);
-});
+if (require.main === module) {
+    app.listen(port, () => {
+        console.log(`PassOp Backend running on http://localhost:${port}`);
+    });
+}
+
+module.exports = app;
